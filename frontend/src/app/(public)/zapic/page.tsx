@@ -2,8 +2,8 @@
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import { useState, useEffect, Suspense } from 'react';
-import Modal from '@/components/ui/Modal';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 function AppointmentForm() {
   const searchParams = useSearchParams();
@@ -18,7 +18,7 @@ function AppointmentForm() {
     phone: '',
     comment: ''
   });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (serviceId) {
@@ -28,8 +28,34 @@ function AppointmentForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsModalOpen(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 500);
   };
+
+  if (isSuccess) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-serif font-bold mb-4 text-dark">Спасибо за заявку!</h2>
+        <p className="text-gray-600 mb-8 text-lg">
+          Мы свяжемся с вами в ближайшее время для подтверждения записи.
+        </p>
+        <Link 
+          href="/" 
+          className="inline-block bg-primary text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition duration-300 font-medium"
+        >
+          Вернуться на главную
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -125,22 +151,6 @@ function AppointmentForm() {
           Записаться
         </button>
       </form>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Успешно"
-        footer={
-          <button
-            onClick={() => setIsModalOpen(false)}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
-          >
-            ОК
-          </button>
-        }
-      >
-        <p>Заявка отправлена! (Демонстрация)</p>
-      </Modal>
     </>
   );
 }
