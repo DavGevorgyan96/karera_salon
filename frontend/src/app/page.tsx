@@ -80,16 +80,16 @@ export default async function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { title: 'Женская стрижка', price: '1500 ₽', desc: 'Индивидуальный подбор формы и уход' },
-                { title: 'Маникюр с покрытием', price: '2000 ₽', desc: 'Классический, аппаратный или комбинированный' },
-                { title: 'Чистка лица', price: '3000 ₽', desc: 'Глубокое очищение и восстановление кожи' },
+                { id: '1', title: 'Женская стрижка', price: '1500 ₽', desc: 'Индивидуальный подбор формы и уход' },
+                { id: '2', title: 'Маникюр с покрытием', price: '2000 ₽', desc: 'Классический, аппаратный или комбинированный' },
+                { id: '3', title: 'Чистка лица', price: '3000 ₽', desc: 'Глубокое очищение и восстановление кожи' },
               ].map((service, idx) => (
                 <div key={idx} className="bg-surface p-8 rounded-2xl shadow-sm hover:shadow-md transition duration-300 border border-gray-100 group">
                   <h3 className="text-2xl font-serif font-bold mb-3 group-hover:text-primary transition">{service.title}</h3>
                   <p className="text-gray-500 mb-6">{service.desc}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-dark">{service.price}</span>
-                    <Link href="/zapic" className="text-primary font-medium hover:text-dark transition">Записаться →</Link>
+                    <Link href={`/zapic?serviceId=${service.id}`} className="text-primary font-medium hover:text-dark transition">Записаться →</Link>
                   </div>
                 </div>
               ))}
