@@ -49,9 +49,15 @@ export default function ContactsPage() {
             </div>
           </div>
           
-          <div className="bg-gray-200 rounded-2xl h-[600px] flex items-center justify-center text-gray-500 overflow-hidden shadow-inner relative">
-            <div className="absolute inset-0 bg-gray-300 animate-pulse"></div>
-            <span className="relative z-10 font-medium">Интерактивная карта</span>
+          <div className="bg-gray-100 rounded-2xl h-[600px] overflow-hidden shadow-lg">
+            <iframe 
+              src="https://yandex.com/map-widget/v1/?ll=37.366195%2C55.820502&mode=poi&poi%5Bpoint%5D=37.366158%2C55.820500&poi%5Buri%5D=ymapsbm1%3A%2F%2Forg%3Foid%3D236970320560&z=17" 
+              width="100%" 
+              height="600" 
+              frameBorder="0" 
+              allowFullScreen={true}
+              className="w-full h-full"
+            />
           </div>
         </div>
       </main>

@@ -2,10 +2,18 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import Modal from '@/components/ui/Modal';
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    id: string | null;
+  }>({
+    isOpen: false,
+    id: null,
+  });
 
   const fetchReviews = async () => {
     try {
@@ -33,6 +41,21 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const openDeleteReview = (id: string) => setConfirmModal({ isOpen: true, id });
+  const closeConfirm = () => setConfirmModal({ isOpen: false, id: null });
+
+  const handleDelete = async () => {
+    if (!confirmModal.id) return;
+    try {
+      await api.delete(`/reviews/${confirmModal.id}`);
+      toast.success('Отзыв удален');
+      fetchReviews();
+      closeConfirm();
+    } catch (error) {
+      toast.error('Ошибка при удалении');
+    }
+  };
+
   if (loading) return <div>Загрузка...</div>;
 
   return (
@@ -49,13 +72,19 @@ export default function AdminReviewsPage() {
                 <div>
                   <span className="font-bold mr-2">{review.clientName}</span>
                   <span className="text-yellow-500">{'★'.repeat(review.rating)}</span>
+                  {review.staff && (
+                    <span className="text-sm text-gray-500 ml-2">
+                      (Мастер: {review.staff.name})
+                    </span>
+                  )}
                 </div>
                 <span className={`text-xs px-2 py-1 rounded ${
                   review.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 
                   review.status === 'HIDDEN' ? 'bg-gray-100 text-gray-800' :
                   'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {review.status}
+                  {review.status === 'APPROVED' ? 'Одобрен' : 
+                   review.status === 'HIDDEN' ? 'Скрыт' : 'На проверке'}
                 </span>
               </div>
               <p className="text-gray-700 mb-4">{review.text}</p>
@@ -71,7 +100,7 @@ export default function AdminReviewsPage() {
                 {review.status !== 'HIDDEN' && (
                   <button 
                     onClick={() => updateStatus(review.id, 'HIDDEN')}
-                    className="text-sm text-red-600 hover:underline"
+                    className="text-sm text-orange-600 hover:underline"
                   >
                     Скрыть
                   </button>
@@ -84,11 +113,41 @@ export default function AdminReviewsPage() {
                     Восстановить
                   </button>
                 )}
+                <button 
+                  onClick={() => openDeleteReview(review.id)}
+                  className="text-sm text-red-600 hover:underline ml-auto"
+                >
+                  Удалить навсегда
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
+
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirm}
+        title="Удалить отзыв?"
+        footer={
+          <>
+            <button
+              onClick={closeConfirm}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Удалить
+            </button>
+          </>
+        }
+      >
+        <p>Это действие нельзя отменить.</p>
+      </Modal>
     </div>
   );
 }

@@ -1,20 +1,30 @@
+'use client';
+import { useEffect, useState } from 'react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Link from 'next/link';
+import { User } from 'lucide-react';
 import api from '@/lib/api';
 
-async function getSettings() {
-  try {
-    const res = await api.get('/settings');
-    return res.data;
-  } catch (error) {
-    console.error('Failed to fetch settings', error);
-    return null;
-  }
-}
+export default function Home() {
+  const [settings, setSettings] = useState<any>(null);
+  const [staff, setStaff] = useState<any[]>([]);
 
-export default async function Home() {
-  const settings = await getSettings();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [settingsRes, staffRes] = await Promise.all([
+          api.get('/settings'),
+          api.get('/staff')
+        ]);
+        setSettings(settingsRes.data);
+        setStaff(staffRes.data.slice(0, 3)); // Take first 3 staff members
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const heroTitle = settings?.heroTitle || 'Искусство быть собой';
   const heroSubtitle = settings?.heroSubtitle || 'Салон красоты «КарЕра» — это пространство, где профессионализм встречается с эстетикой. Позвольте нам раскрыть вашу естественную красоту.';
@@ -116,18 +126,21 @@ export default async function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {[
-                { name: 'Анна Иванова', role: 'Топ-стилист' },
-                { name: 'Мария Петрова', role: 'Nail-мастер' },
-                { name: 'Елена Сидорова', role: 'Косметолог-эстетист' },
-              ].map((master, idx) => (
-                <div key={idx} className="group text-center">
-                  <div className="relative w-64 h-64 mx-auto mb-6 rounded-full overflow-hidden bg-gray-100">
-                    {/* Placeholder for master image */}
-                    <div className="absolute inset-0 bg-gray-200 group-hover:scale-105 transition duration-500"></div>
+              {staff.map((master) => (
+                <div key={master.id} className="group text-center">
+                  <div className="relative w-64 h-64 mx-auto mb-6 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    {master.avatarUrl ? (
+                      <img 
+                        src={`${api.defaults.baseURL?.replace(/\/$/, '')}${master.avatarUrl}`} 
+                        alt={master.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                    ) : (
+                      <User className="w-32 h-32 text-gray-400 group-hover:scale-110 transition duration-500" strokeWidth={1.5} />
+                    )}
                   </div>
                   <h3 className="text-2xl font-serif font-bold mb-2">{master.name}</h3>
-                  <p className="text-primary font-medium uppercase tracking-wider text-sm">{master.role}</p>
+                  <p className="text-primary font-medium uppercase tracking-wider text-sm">{master.specialization?.name || 'Мастер'}</p>
                 </div>
               ))}
             </div>

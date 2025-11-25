@@ -71,4 +71,43 @@ export class AppointmentsService {
       data: { status: status as AppointmentStatus },
     });
   }
+
+  async update(id: string, data: any) {
+    const updateData: any = { ...data };
+    
+    // Recalculate timeTo if timeFrom or serviceId changes
+    if (data.timeFrom || data.serviceId) {
+      const appointment = await this.prisma.appointment.findUnique({ where: { id } });
+      if (!appointment) throw new Error('Appointment not found');
+
+      const serviceId = data.serviceId || appointment.serviceId;
+      const service = await this.prisma.service.findUnique({ where: { id: serviceId } });
+      if (!service) throw new Error('Service not found');
+
+      const timeFromStr = data.timeFrom 
+        ? (data.timeFrom.includes('T') ? data.timeFrom.split('T')[1].substring(0, 5) : data.timeFrom)
+        : appointment.timeFrom.toISOString().split('T')[1].substring(0, 5);
+
+      const timeFromDate = new Date(`1970-01-01T${timeFromStr}:00`);
+      const timeToDate = new Date(timeFromDate.getTime() + service.durationMinutes * 60000);
+
+      updateData.timeFrom = timeFromDate;
+      updateData.timeTo = timeToDate;
+      
+      if (data.date) {
+        updateData.date = new Date(data.date);
+      }
+    }
+
+    return this.prisma.appointment.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  remove(id: string) {
+    return this.prisma.appointment.delete({
+      where: { id },
+    });
+  }
 }

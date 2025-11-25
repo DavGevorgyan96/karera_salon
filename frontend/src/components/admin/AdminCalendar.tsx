@@ -1,9 +1,19 @@
 "use client";
-import { Calendar, momentLocalizer, Views, Navigate } from 'react-big-calendar';
+import { useState, useCallback } from 'react';
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/ru';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import './calendar-overrides.css'; // We will create this or just rely on inline styles/tailwind
+import './calendar-overrides.css';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar as CalendarIcon, 
+  Clock, 
+  User, 
+  Scissors,
+  MoreHorizontal
+} from 'lucide-react';
 
 moment.locale('ru');
 const localizer = momentLocalizer(moment);
@@ -13,69 +23,101 @@ interface AdminCalendarProps {
   blockedTimes: any[];
   onSelectSlot: (slotInfo: any) => void;
   onSelectEvent: (event: any) => void;
+  view?: any;
+  onView?: (view: any) => void;
+  date?: Date;
+  onNavigate?: (date: Date) => void;
 }
 
-const CustomToolbar = (toolbar: any) => {
-  const goToBack = () => {
-    toolbar.onNavigate(Navigate.PREVIOUS);
-  };
-
-  const goToNext = () => {
-    toolbar.onNavigate(Navigate.NEXT);
-  };
-
-  const goToCurrent = () => {
-    toolbar.onNavigate(Navigate.TODAY);
+const CustomToolbar = ({ onNavigate, onView, date, view }: any) => {
+  const goToBack = () => onNavigate('PREV');
+  const goToNext = () => onNavigate('NEXT');
+  const goToCurrent = () => onNavigate('TODAY');
+  
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+        onNavigate('DATE', new Date(e.target.value));
+    }
   };
 
   const label = () => {
-    const date = moment(toolbar.date);
+    const dateObj = moment(date);
     return (
-      <span className="text-xl font-bold text-gray-800 capitalize">
-        {date.format('MMMM YYYY')}
-      </span>
+      <div className="flex flex-col">
+        <span className="text-2xl font-bold text-gray-900 capitalize leading-none">
+          {dateObj.format('MMMM')}
+        </span>
+        <span className="text-sm text-gray-500 font-medium">
+          {dateObj.format('YYYY')}
+        </span>
+      </div>
     );
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 p-2">
-      <div className="flex items-center gap-2">
-        <button onClick={goToBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-        </button>
-        <button onClick={goToCurrent} className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            Сегодня
-        </button>
-        <button onClick={goToNext} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-        </button>
+    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
+          <button 
+            type="button" 
+            onClick={goToBack} 
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-600"
+          >
+              <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button 
+            type="button" 
+            onClick={goToCurrent} 
+            className="px-4 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+              Сегодня
+          </button>
+          <button 
+            type="button" 
+            onClick={goToNext} 
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-600"
+          >
+              <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="relative">
+            <input
+                type="date"
+                onChange={handleDateChange}
+                value={moment(date).format('YYYY-MM-DD')}
+                className="pl-10 pr-4 py-1.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm cursor-pointer"
+            />
+            <CalendarIcon className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+        
+        <div className="hidden md:block">
+          {label()}
+        </div>
       </div>
-      
-      <div>
+
+      <div className="md:hidden">
         {label()}
       </div>
 
-      <div className="flex bg-gray-100 p-1 rounded-lg">
+      <div className="flex bg-gray-100/80 p-1 rounded-xl">
         {[
             { id: 'month', label: 'Месяц' },
             { id: 'week', label: 'Неделя' },
             { id: 'day', label: 'День' },
             { id: 'agenda', label: 'Список' }
-        ].map(view => (
+        ].map(viewItem => (
             <button
-                key={view.id}
-                onClick={() => toolbar.onView(view.id)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                    toolbar.view === view.id 
-                    ? 'bg-white text-primary shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700'
+                key={viewItem.id}
+                type="button"
+                onClick={() => onView(viewItem.id)}
+                className={`px-6 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                    view === viewItem.id 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
                 }`}
             >
-                {view.label}
+                {viewItem.label}
             </button>
         ))}
       </div>
@@ -84,26 +126,77 @@ const CustomToolbar = (toolbar: any) => {
 };
 
 const CustomEvent = ({ event }: any) => {
+    const isBlocked = event.type === 'BLOCKED';
+    
+    if (isBlocked) {
+        return (
+            <div className="h-full w-full flex items-center justify-center bg-red-50 border-l-4 border-red-400 rounded-r-md p-1">
+                <span className="text-xs font-medium text-red-800 truncate">
+                    {event.title}
+                </span>
+            </div>
+        );
+    }
+
+    const statusColors = {
+        NEW: 'bg-blue-50 border-blue-500 text-blue-700',
+        CONFIRMED: 'bg-emerald-50 border-emerald-500 text-emerald-700',
+        DONE: 'bg-gray-50 border-gray-500 text-gray-700',
+        CANCELED: 'bg-red-50 border-red-500 text-red-700'
+    };
+
+    const colorClass = statusColors[event.status as keyof typeof statusColors] || statusColors.NEW;
+
     return (
-        <div className="h-full w-full flex flex-col px-1 py-0.5 text-xs overflow-hidden">
-            <div className="font-bold truncate">{event.title}</div>
-            {event.resource?.clientPhone && (
-                <div className="opacity-90 truncate text-[10px]">{event.resource.clientPhone}</div>
-            )}
-             {event.type === 'APPOINTMENT' && event.resource?.timeFrom && (
-                <div className="opacity-90 truncate text-[10px]">
-                    {new Date(event.resource.timeFrom).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+        <div className={`h-full w-full flex flex-col p-1.5 text-xs overflow-hidden rounded-md border-l-4 transition-all hover:brightness-95 shadow-sm ${colorClass}`}>
+            <div className="font-bold truncate flex items-center gap-1.5 mb-0.5">
+                <User className="w-3 h-3 opacity-70" />
+                {event.title.split('(')[0]}
+            </div>
+            <div className="flex flex-col gap-0.5 opacity-90">
+                <div className="flex items-center gap-1.5 truncate">
+                    <Scissors className="w-3 h-3 opacity-70" />
+                    <span className="truncate font-medium">{event.resource?.service?.name}</span>
                 </div>
-            )}
+                <div className="flex items-center gap-1.5 truncate text-[10px]">
+                    <Clock className="w-3 h-3 opacity-70" />
+                    <span>
+                        {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
+                    </span>
+                </div>
+            </div>
         </div>
     )
 }
 
-export default function AdminCalendar({ appointments, blockedTimes, onSelectSlot, onSelectEvent }: AdminCalendarProps) {
+export default function AdminCalendar({ 
+  appointments, 
+  blockedTimes, 
+  onSelectSlot, 
+  onSelectEvent,
+  view: controlledView,
+  onView: controlledOnView,
+  date: controlledDate,
+  onNavigate: controlledOnNavigate
+}: AdminCalendarProps) {
+  const [localView, setLocalView] = useState(Views.MONTH);
+  const [localDate, setLocalDate] = useState(new Date());
+
+  const view = controlledView !== undefined ? controlledView : localView;
+  const date = controlledDate !== undefined ? controlledDate : localDate;
+
+  const handleView = (newView: any) => {
+    if (controlledOnView) controlledOnView(newView);
+    else setLocalView(newView);
+  };
+
+  const handleNavigate = (newDate: Date) => {
+    if (controlledOnNavigate) controlledOnNavigate(newDate);
+    else setLocalDate(newDate);
+  };
+
   const events = [
     ...appointments.map(app => {
-        // Construct start/end dates. 
-        // app.date is YYYY-MM-DD or ISO. app.timeFrom is ISO (1970-01-01THH:mm:ss).
         const dateStr = app.date.toString().split('T')[0];
         const timeFromStr = app.timeFrom.toString().split('T')[1] || app.timeFrom;
         const timeToStr = app.timeTo.toString().split('T')[1] || app.timeTo;
@@ -146,62 +239,15 @@ export default function AdminCalendar({ appointments, blockedTimes, onSelectSlot
   ];
 
   const eventStyleGetter = (event: any) => {
-    let backgroundColor = '#3b82f6';
-    let borderLeft = '4px solid #2563eb';
-    
-    if (event.type === 'BLOCKED') {
-      backgroundColor = '#fee2e2'; // Red-100
-      borderLeft = '4px solid #ef4444'; // Red-500
-      return {
+    return {
         style: {
-            backgroundColor,
-            borderLeft,
-            color: '#991b1b', // Red-800
-            borderRadius: '4px',
+            backgroundColor: 'transparent',
             border: 'none',
-            display: 'block'
+            padding: 0,
+            boxShadow: 'none',
+            color: 'inherit'
         }
-      };
-    } else if (event.status === 'CONFIRMED') {
-      backgroundColor = '#d1fae5'; // Green-100
-      borderLeft = '4px solid #10b981'; // Green-500
-      return {
-        style: {
-            backgroundColor,
-            borderLeft,
-            color: '#065f46', // Green-800
-            borderRadius: '4px',
-            border: 'none',
-            display: 'block'
-        }
-      };
-    } else if (event.status === 'NEW') {
-      backgroundColor = '#dbeafe'; // Blue-100
-      borderLeft = '4px solid #3b82f6'; // Blue-500
-      return {
-        style: {
-            backgroundColor,
-            borderLeft,
-            color: '#1e40af', // Blue-800
-            borderRadius: '4px',
-            border: 'none',
-            display: 'block'
-        }
-      };
-    } else {
-      backgroundColor = '#f3f4f6'; // Gray-100
-      borderLeft = '4px solid #6b7280'; // Gray-500
-      return {
-        style: {
-            backgroundColor,
-            borderLeft,
-            color: '#374151', // Gray-700
-            borderRadius: '4px',
-            border: 'none',
-            display: 'block'
-        }
-      };
-    }
+    };
   };
 
   const slotPropGetter = (date: Date) => {
@@ -209,36 +255,14 @@ export default function AdminCalendar({ appointments, blockedTimes, onSelectSlot
     now.setHours(0, 0, 0, 0);
     if (date < now) {
       return {
-        style: {
-          backgroundColor: '#f9fafb', // Very light gray
-          backgroundImage: 'repeating-linear-gradient(45deg, #f3f4f6 25%, transparent 25%, transparent 75%, #f3f4f6 75%, #f3f4f6), repeating-linear-gradient(45deg, #f3f4f6 25%, #f9fafb 25%, #f9fafb 75%, #f3f4f6 75%, #f3f4f6)',
-          backgroundPosition: '0 0, 10px 10px',
-          backgroundSize: '20px 20px',
-          cursor: 'not-allowed',
-          opacity: 0.7
-        }
+        className: 'bg-gray-50/50 cursor-not-allowed'
       };
     }
     return {};
   };
 
-  const dayPropGetter = (date: Date) => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    if (date < now) {
-        return {
-            style: {
-                backgroundColor: '#f9fafb',
-                color: '#9ca3af',
-                cursor: 'not-allowed'
-            }
-        };
-    }
-    return {};
-  };
-
   return (
-    <div className="h-[700px] bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <div className="h-[850px] bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
       <Calendar
         localizer={localizer}
         events={events}
@@ -248,13 +272,22 @@ export default function AdminCalendar({ appointments, blockedTimes, onSelectSlot
         onSelectSlot={onSelectSlot}
         onSelectEvent={onSelectEvent}
         selectable
+        view={view}
+        date={date}
+        onNavigate={handleNavigate}
+        onView={handleView}
         components={{
             toolbar: CustomToolbar,
             event: CustomEvent
         }}
         eventPropGetter={eventStyleGetter}
         slotPropGetter={slotPropGetter}
-        dayPropGetter={dayPropGetter}
+        popup={true} // Show popup when too many events in month view
+        min={new Date(0, 0, 0, 8, 0, 0)} // Start at 8:00 AM
+        max={new Date(0, 0, 0, 22, 0, 0)} // End at 10:00 PM
+        step={30} // 30 minute slots
+        timeslots={2} // 2 slots per step (so 1 hour is 2 steps) -> wait, step is slot duration. timeslots is number of slots per "major" time.
+        // Actually standard is step=30, timeslots=2 means 1 hour lines.
         messages={{
           next: "Вперед",
           previous: "Назад",
@@ -266,7 +299,8 @@ export default function AdminCalendar({ appointments, blockedTimes, onSelectSlot
           date: "Дата",
           time: "Время",
           event: "Событие",
-          noEventsInRange: "Нет событий в этом диапазоне"
+          noEventsInRange: "Нет событий",
+          showMore: (total) => `+ еще ${total}`
         }}
       />
     </div>

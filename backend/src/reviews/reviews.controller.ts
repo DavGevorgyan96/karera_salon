@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles, Role } from '../auth/roles.decorator';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -16,15 +18,24 @@ export class ReviewsController {
     return this.reviewsService.findApproved();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Get()
   findAll(@Query('status') status?: string) {
     return this.reviewsService.findAll(status);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Put(':id/status')
   updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.reviewsService.updateStatus(id, status);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.reviewsService.remove(id);
   }
 }
