@@ -1,0 +1,77 @@
+/* Custom overrides for react-big-calendar */
+
+.rbc-calendar {
+    font-family: inherit;
+}
+
+.rbc-header {
+    padding: 12px 4px;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.rbc-month-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+    border-left: 1px solid #e5e7eb;
+}
+
+.rbc-month-row + .rbc-month-row {
+    border-top: 1px solid #e5e7eb;
+}
+
+.rbc-date-cell {
+    padding: 8px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.rbc-off-range-bg {
+    background-color: #f9fafb;
+}
+
+.rbc-today {
+    background-color: #eff6ff; /* blue-50 */
+}
+
+.rbc-event {
+    border-radius: 4px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.rbc-time-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.rbc-time-header {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.rbc-time-content {
+    border-top: 1px solid #e5e7eb;
+}
+
+.rbc-timeslot-group {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid #f3f4f6;
+}
+
+.rbc-current-time-indicator {
+    background-color: #ef4444;
+}
+
+/* Hide default toolbar since we have a custom one */
+/* .rbc-toolbar {
+    display: none;
+} */

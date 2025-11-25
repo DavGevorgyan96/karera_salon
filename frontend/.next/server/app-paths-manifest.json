@@ -1,0 +1,9 @@
+{
+  "/not-found": "app/not-found.js",
+  "/page": "app/page.js",
+  "/(public)/otzyvy/page": "app/(public)/otzyvy/page.js",
+  "/(public)/kontakty/page": "app/(public)/kontakty/page.js",
+  "/(public)/uslugi/page": "app/(public)/uslugi/page.js",
+  "/(public)/masters/page": "app/(public)/masters/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js"
+}
